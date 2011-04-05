@@ -1,4 +1,4 @@
-#lang scheme
+#lang scheme/gui
 ;MY GA implementation of the travelling sales man problem
 (require srfi/1)
 
@@ -27,6 +27,21 @@
 
 (define list-of-node 
   (map circle-xy (range 0 37 10) (build-list 36 (lambda (x) 10))))
+
+;(define (mutate list-of-node)
+;  (let* ([pos1 (random (length list-of-node))]
+;        [pos2 (random (length list-of-node))]
+;        [pos1element (list-ref list-of-node pos1)]
+;        [pos2element (list-ref list-of-node pos2)])
+;    
+;  ))
+
+(define (swap l pos1 pos2 templist currpos)
+ (cond [(= currpos (length l)) templist]
+       [(= currpos pos1) (swap l pos1 pos2 (append templist (list (list-ref l pos2))) (+ 1 currpos))]
+       [(= currpos pos2) (swap l pos1 pos2 (append templist (list (list-ref l pos1))) (+ 1 currpos))]
+       [else (swap l pos1 pos2 (append templist (list (list-ref l currpos))) (+ 1 currpos))]
+  ))
 
 (define (distance n1 n2)
   (let* ([n1x (first n1)]
@@ -61,4 +76,7 @@
          [selected-node (list-ref list-of-node pos)])
     (cons selected-node
           (generate (remove (lambda (x) (eq? x selected-node)) list-of-node))))))
-          
+
+;Windowing stuff
+(define frame (new frame% [label "TSP"] [width 300] [height 300]))
+(define canvas (new canvas% [parent frame]))
