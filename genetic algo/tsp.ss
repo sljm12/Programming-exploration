@@ -26,7 +26,7 @@
   (list (circle-x angle-deg radius) (circle-y angle-deg radius)))
 
 (define list-of-node 
-  (map circle-xy (range 0 37 10) (build-list 36 (lambda (x) 10))))
+  (map circle-xy (range 0 37 10) (build-list 36 (lambda (x) 100))))
 
 ;(define (mutate list-of-node)
 ;  (let* ([pos1 (random (length list-of-node))]
@@ -79,4 +79,30 @@
 
 ;Windowing stuff
 (define frame (new frame% [label "TSP"] [width 300] [height 300]))
-(define canvas (new canvas% [parent frame]))
+; Create a 300 x 300 bitmap
+(define face-bitmap (make-object bitmap% 300 300))
+; Create a drawing context for the bitmap
+(define bm-dc (make-object bitmap-dc% face-bitmap))
+(send bm-dc clear)
+(define canvas (new canvas% [parent frame]
+                    [paint-callback (lambda (canvas dc)
+                                      (send dc draw-bitmap face-bitmap 0 0))]))
+(define dc (send canvas get-dc))
+
+(define no-pen (make-object pen% "BLACK" 1 'transparent))
+(define no-brush (make-object brush% "BLACK" 'transparent))
+(define blue-brush (make-object brush% "BLUE" 'solid))
+(define yellow-brush (make-object brush% "YELLOW" 'solid))
+(define red-pen (make-object pen% "RED" 2 'solid))
+
+(define (draw-node dc list-of-node)
+  (map (lambda (xy) 
+         (let ([x (first xy)]
+               [y (second xy)])
+         (send dc draw-rectangle (+ 150 x) (+ 150 y) 10 10)))
+       list-of-node
+  ))
+
+(define (draw-window)
+  (draw-node bm-dc list-of-node)
+  (send frame show #t))
