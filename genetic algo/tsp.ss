@@ -69,6 +69,23 @@
 (define (map-fitness list-of-nodes)
   (map fitness list-of-nodes))
 
+;Combine the fitness score to the node so that we can sort them later
+(define (combine-fitness fitness-map nodes-list)
+  (map (lambda (x y)
+         (list x y))
+       fitness-map
+       nodes-list))
+
+;Sort it so that we can determine what nodes are not feasible for processing
+(define (sort-fitness-nodes fitness-nodes)
+  (sort fitness-nodes (lambda (x y)
+                        (let ([f1 (car x)]
+                              [f2 (car y)])
+                          (< f1 f2)))))
+
+;We rank and sort the nodes-list from shortest distance to the longest distance
+;(define (rank-fitness fitness-scores nodes-list))
+
 ;Helper to copy the first node to the last node so that the loop is a close loop
 (define (copy-first-to-last nodes)
   (let ([first (first nodes)])
