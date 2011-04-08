@@ -1,5 +1,7 @@
 #lang scheme/gui
 ;MY GA implementation of the travelling sales man problem
+;This implementation runs in PLT Scheme 4.2.1
+
 (require srfi/1)
 
 ;(define list-of-node
@@ -28,20 +30,21 @@
 (define list-of-node 
   (map circle-xy (range 0 37 10) (build-list 36 (lambda (x) 100))))
 
-;(define (mutate list-of-node)
-;  (let* ([pos1 (random (length list-of-node))]
-;        [pos2 (random (length list-of-node))]
-;        [pos1element (list-ref list-of-node pos1)]
-;        [pos2element (list-ref list-of-node pos2)])
-;    
-;  ))
+(define (swap nodes pos1 pos2)
+  (swap-aux nodes pos1 pos2 '() 0))
 
-(define (swap l pos1 pos2 templist currpos)
+(define (swap-aux l pos1 pos2 templist currpos)
  (cond [(= currpos (length l)) templist]
-       [(= currpos pos1) (swap l pos1 pos2 (append templist (list (list-ref l pos2))) (+ 1 currpos))]
-       [(= currpos pos2) (swap l pos1 pos2 (append templist (list (list-ref l pos1))) (+ 1 currpos))]
-       [else (swap l pos1 pos2 (append templist (list (list-ref l currpos))) (+ 1 currpos))]
+       [(= currpos pos1) (swap-aux l pos1 pos2 (append templist (list (list-ref l pos2))) (+ 1 currpos))]
+       [(= currpos pos2) (swap-aux l pos1 pos2 (append templist (list (list-ref l pos1))) (+ 1 currpos))]
+       [else (swap-aux l pos1 pos2 (append templist (list (list-ref l currpos))) (+ 1 currpos))]
   ))
+
+(define (mutate list-of-node)
+  (let* ([length (length list-of-node)]
+        [pos1 (random length)]
+        [pos2 (random length)])
+    (swap list-of-node pos1 pos2)))
 
 (define (distance n1 n2)
   (let* ([n1x (first n1)]
@@ -63,6 +66,9 @@
       (+ (distance (first order) (second order)) (fitness (cdr order)))
   ))
 
+(define (map-fitness list-of-nodes)
+  (map fitness list-of-nodes))
+
 ;Helper to copy the first node to the last node so that the loop is a close loop
 (define (copy-first-to-last nodes)
   (let ([first (first nodes)])
@@ -76,6 +82,13 @@
          [selected-node (list-ref list-of-node pos)])
     (cons selected-node
           (generate (remove (lambda (x) (eq? x selected-node)) list-of-node))))))
+
+;Generate a number of node-list for use as seed for the algo
+(define (generate-all-nodes list-of-node num)
+  (if (= num 0)
+      '()
+      (cons (generate list-of-node) (generate-all-nodes list-of-node (- num 1)))))
+
 
 ;Windowing stuff
 (define frame (new frame% [label "TSP"] [width 300] [height 300]))
@@ -99,10 +112,23 @@
   (map (lambda (xy) 
          (let ([x (first xy)]
                [y (second xy)])
-         (send dc draw-rectangle (+ 150 x) (+ 150 y) 10 10)))
+         (send dc draw-rectangle (+ 150 x) (+ 150 y) 2 2)))
        list-of-node
   ))
 
+(define (draw-line dc n1 n2 offsetx offsety)
+  (send dc draw-line (+ (first n1) offsetx) (+ (second n1) offsety) 
+        (+ (first n2) offsetx) (+ (second n2) offsety)))
+
+(define (draw-lines dc list-of-node offsetx offsety)
+  (if (= (length list-of-node) 1)
+      #t
+      (let ([n1 (first list-of-node)]
+            [n2 (second list-of-node)])
+        (draw-line dc n1 n2 offsetx offsety)
+        (draw-lines dc (cdr list-of-node) offsetx offsety))))
+
 (define (draw-window)
   (draw-node bm-dc list-of-node)
+  (draw-lines bm-dc list-of-node 150 150)
   (send frame show #t))
