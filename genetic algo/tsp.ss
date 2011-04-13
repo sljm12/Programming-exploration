@@ -66,6 +66,7 @@
       (+ (distance (first order) (second order)) (fitness (cdr order)))
   ))
 
+;Calculate fitness for a listofnodes output is a list of fitness values
 (define (map-fitness list-of-nodes)
   (map fitness list-of-nodes))
 
@@ -82,9 +83,6 @@
                         (let ([f1 (car x)]
                               [f2 (car y)])
                           (< f1 f2)))))
-
-;We rank and sort the nodes-list from shortest distance to the longest distance
-;(define (rank-fitness fitness-scores nodes-list))
 
 ;Helper to copy the first node to the last node so that the loop is a close loop
 (define (copy-first-to-last nodes)
@@ -149,3 +147,14 @@
   (draw-node bm-dc list-of-node)
   (draw-lines bm-dc list-of-node 150 150)
   (send frame show #t))
+
+;Process a list of nodes 
+;Nodes are generated and pass into this function
+;This fucntion will calculated the fitness and remove the "unfit" ones
+;Then it will do recombination/mutation as necessary
+(define (run nodes)
+  (let* ([fitness (map-fitness nodes)]
+        [fitness-map (sort-fitness-nodes (combine-fitness fitness nodes))]
+        [fit-nodes (drop-right fitness-map 5)])
+    fit-nodes
+    ))
