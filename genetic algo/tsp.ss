@@ -40,6 +40,26 @@
        [else (swap-aux l pos1 pos2 (append templist (list (list-ref l currpos))) (+ 1 currpos))]
   ))
 
+;Finds the cyle in the 2 parents, the result is a list in the format
+;((value position-value-in-parent1))
+;Parameters
+;parent1, parent2 The 2 parents
+;pos The position that we are looking at now
+;cycle-list The results of the cycle in the format ((value position-of-value-in-parent1) ...)
+(define (find-cycle parent1 parent2 pos cycle-list)
+  (let* ([member (list-ref parent1 pos)]
+         [member-2 (list-ref parent2 pos)]
+         [pos-member-2-in-1 (list-index 
+                        (lambda (x) (eq? x member-2))
+                        parent1)])
+    (if (assoc member-2 cycle-list)
+        (cons (list member pos) cycle-list)
+        (find-cycle parent1 parent2 
+                    pos-member-2-in-1 
+                    (cons (list member pos) cycle-list))
+    
+    )))
+
 (define (mutate list-of-node)
   (let* ([length (length list-of-node)]
         [pos1 (random length)]
